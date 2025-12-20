@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-using RoxamiUtils;
 using UnityEngine.Experimental.Rendering;
 using UnityEngine.Profiling;
 using Unity.Collections;
@@ -563,60 +562,44 @@ namespace UnityEngine.Rendering.Universal.Internal
                 cmd.DrawMesh(m_FullscreenMesh, Matrix4x4.identity, m_StencilDeferredMaterial, 0, m_StencilDeferredPasses[(int)StencilDeferredPasses.ClearStencilPartial]);
             }
         }
-        
+
         internal void ExecuteDeferredPass(ScriptableRenderContext context, ref RenderingData renderingData)
         {
+            // Workaround for bug.
+            // When changing the URP asset settings (ex: shadow cascade resolution), all ScriptableRenderers are recreated but
+            // materials passed in have not finished initializing at that point if they have fallback shader defined. In particular deferred shaders only have 1 pass available,
+            // which prevents from resolving correct pass indices.
+            if (m_StencilDeferredPasses[0] < 0)
+                InitStencilDeferredMaterial();
+
             var cmd = renderingData.commandBuffer;
             using (new ProfilingScope(cmd, m_ProfilingDeferredPass))
             {
+                // This does 2 things:
+                // - baked geometry are skipped (do not receive dynamic lighting)
+                // - non-baked geometry (== non-static geometry) use shadowMask/occlusionProbes to emulate baked shadows influences.
+                CoreUtils.SetKeyword(cmd, ShaderKeywordStrings._DEFERRED_MIXED_LIGHTING, this.UseShadowMask);
+
                 // This must be set for each eye in XR mode multipass.
                 SetupMatrixConstants(cmd, ref renderingData);
-                
-                RoxamiDeferredLightUtils.RenderToonDeferredLights(cmd, renderingData);
-            }
-            context.ExecuteCommandBuffer(cmd);
-            cmd.Clear();
-        }
 
-        #region URP_Execute
-        // internal void ExecuteDeferredPass(ScriptableRenderContext context, ref RenderingData renderingData)
-        // {
-        //     // Workaround for bug.
-        //     // When changing the URP asset settings (ex: shadow cascade resolution), all ScriptableRenderers are recreated but
-        //     // materials passed in have not finished initializing at that point if they have fallback shader defined. In particular deferred shaders only have 1 pass available,
-        //     // which prevents from resolving correct pass indices.
-        //     if (m_StencilDeferredPasses[0] < 0)
-        //         InitStencilDeferredMaterial();
-        //
-        //     var cmd = renderingData.commandBuffer;
-        //     using (new ProfilingScope(cmd, m_ProfilingDeferredPass))
-        //     {
-        //         // This does 2 things:
-        //         // - baked geometry are skipped (do not receive dynamic lighting)
-        //         // - non-baked geometry (== non-static geometry) use shadowMask/occlusionProbes to emulate baked shadows influences.
-        //         CoreUtils.SetKeyword(cmd, ShaderKeywordStrings._DEFERRED_MIXED_LIGHTING, this.UseShadowMask);
-        //
-        //         // This must be set for each eye in XR mode multipass.
-        //         SetupMatrixConstants(cmd, ref renderingData);
-        //
-        //         // Firt directional light will apply SSAO if possible, unless there is none.
-        //         if (!HasStencilLightsOfType(LightType.Directional))
-        //             RenderSSAOBeforeShading(cmd, ref renderingData);
-        //
-        //         RenderStencilLights(context, cmd, ref renderingData);
-        //
-        //         CoreUtils.SetKeyword(cmd, ShaderKeywordStrings._DEFERRED_MIXED_LIGHTING, false);
-        //
-        //         // Legacy fog (Windows -> Rendering -> Lighting Settings -> Fog)
-        //         RenderFog(context, cmd, ref renderingData);
-        //     }
-        //
-        //     // Restore shader keywords
-        //     CoreUtils.SetKeyword(cmd, ShaderKeywordStrings.AdditionalLightShadows, renderingData.shadowData.isKeywordAdditionalLightShadowsEnabled);
-        //     ShadowUtils.SetSoftShadowQualityShaderKeywords(cmd, ref renderingData.shadowData);
-        //     CoreUtils.SetKeyword(cmd, ShaderKeywordStrings.LightCookies, m_LightCookieManager != null && m_LightCookieManager.IsKeywordLightCookieEnabled);
-        // }
-        #endregion
+                // Firt directional light will apply SSAO if possible, unless there is none.
+                if (!HasStencilLightsOfType(LightType.Directional))
+                    RenderSSAOBeforeShading(cmd, ref renderingData);
+
+                RenderStencilLights(context, cmd, ref renderingData);
+
+                CoreUtils.SetKeyword(cmd, ShaderKeywordStrings._DEFERRED_MIXED_LIGHTING, false);
+
+                // Legacy fog (Windows -> Rendering -> Lighting Settings -> Fog)
+                RenderFog(context, cmd, ref renderingData);
+            }
+
+            // Restore shader keywords
+            CoreUtils.SetKeyword(cmd, ShaderKeywordStrings.AdditionalLightShadows, renderingData.shadowData.isKeywordAdditionalLightShadowsEnabled);
+            ShadowUtils.SetSoftShadowQualityShaderKeywords(cmd, ref renderingData.shadowData);
+            CoreUtils.SetKeyword(cmd, ShaderKeywordStrings.LightCookies, m_LightCookieManager != null && m_LightCookieManager.IsKeywordLightCookieEnabled);
+        }
 
         // adapted from ForwardLights.SetupShaderLightConstants
         void SetupShaderLightConstants(CommandBuffer cmd, ref RenderingData renderingData)
@@ -848,7 +831,7 @@ namespace UnityEngine.Rendering.Universal.Internal
 
                 // Lighting pass.
                 cmd.DrawMesh(m_FullscreenMesh, Matrix4x4.identity, m_StencilDeferredMaterial, 0, m_StencilDeferredPasses[(int)StencilDeferredPasses.DirectionalLit]);
-                //cmd.DrawMesh(m_FullscreenMesh, Matrix4x4.identity, m_StencilDeferredMaterial, 0, m_StencilDeferredPasses[(int)StencilDeferredPasses.DirectionalSimpleLit]);
+                cmd.DrawMesh(m_FullscreenMesh, Matrix4x4.identity, m_StencilDeferredMaterial, 0, m_StencilDeferredPasses[(int)StencilDeferredPasses.DirectionalSimpleLit]);
 
                 isFirstLight = false;
             }
@@ -1162,7 +1145,7 @@ namespace UnityEngine.Rendering.Universal.Internal
             return mesh;
         }
 
-        public static Mesh CreateFullscreenMesh()
+        static Mesh CreateFullscreenMesh()
         {
             // TODO reorder for pre&post-transform cache optimisation.
             // Simple full-screen triangle.
