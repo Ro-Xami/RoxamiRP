@@ -16,12 +16,14 @@ namespace UnityEngine.Rendering.Universal.Internal
     internal class DeferredPass : ScriptableRenderPass
     {
         DeferredLights m_DeferredLights;
+        RoxamiDeferredLights m_RoxamiDeferredLights;
 
-        public DeferredPass(RenderPassEvent evt, DeferredLights deferredLights)
+        public DeferredPass(RenderPassEvent evt, DeferredLights deferredLights, RoxamiDeferredLights roxamiDeferredLights)
         {
             base.profilingSampler = new ProfilingSampler(nameof(DeferredPass));
             base.renderPassEvent = evt;
             m_DeferredLights = deferredLights;
+            m_RoxamiDeferredLights = roxamiDeferredLights;
         }
 
         // ScriptableRenderPass
@@ -39,6 +41,12 @@ namespace UnityEngine.Rendering.Universal.Internal
         // ScriptableRenderPass
         public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
         {
+            if (m_RoxamiDeferredLights != null && m_RoxamiDeferredLights.NeedToExecute())
+            {
+                m_RoxamiDeferredLights.Execute(context, renderingData.commandBuffer, ref renderingData);
+                return;
+            }
+            
             m_DeferredLights.ExecuteDeferredPass(context, ref renderingData);
         }
 

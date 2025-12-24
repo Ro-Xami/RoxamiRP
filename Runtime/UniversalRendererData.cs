@@ -152,6 +152,8 @@ namespace UnityEngine.Rendering.Universal
         /// Shader resources used in URP.
         /// </summary>
         public ShaderResources shaders = null;
+        
+        [SerializeField] RoxamiAdditionalRendererData m_RoxamiAdditionalRendererData;
 
         const int k_LatestAssetVersion = 2;
         [SerializeField] int m_AssetVersion = 0;
@@ -178,6 +180,16 @@ namespace UnityEngine.Rendering.Universal
                 ReloadAllNullProperties();
             }
             return new UniversalRenderer(this);
+        }
+
+        public RoxamiAdditionalRendererData roxamiAdditionalRendererData
+        {
+            get => m_RoxamiAdditionalRendererData;
+            set
+            {
+                SetDirty();
+                m_RoxamiAdditionalRendererData = value;
+            } 
         }
 
         /// <summary>

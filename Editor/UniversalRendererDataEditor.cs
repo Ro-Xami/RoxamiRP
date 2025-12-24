@@ -39,6 +39,8 @@ namespace UnityEditor.Rendering.Universal
             public static readonly GUIContent intermediateTextureMode = EditorGUIUtility.TrTextContent("Intermediate Texture", "Controls when URP renders via an intermediate texture.");
         }
 
+        private SerializedProperty m_roxamiAdditionalRendererData;
+
         SerializedProperty m_OpaqueLayerMask;
         SerializedProperty m_TransparentLayerMask;
         SerializedProperty m_RenderingMode;
@@ -54,6 +56,7 @@ namespace UnityEditor.Rendering.Universal
 
         private void OnEnable()
         {
+            m_roxamiAdditionalRendererData = serializedObject.FindProperty("m_RoxamiAdditionalRendererData");
             m_OpaqueLayerMask = serializedObject.FindProperty("m_OpaqueLayerMask");
             m_TransparentLayerMask = serializedObject.FindProperty("m_TransparentLayerMask");
             m_RenderingMode = serializedObject.FindProperty("m_RenderingMode");
@@ -77,6 +80,7 @@ namespace UnityEditor.Rendering.Universal
 
             EditorGUILayout.LabelField(Styles.FilteringSectionLabel, EditorStyles.boldLabel);
             EditorGUI.indentLevel++;
+            
             EditorGUILayout.PropertyField(m_OpaqueLayerMask, Styles.OpaqueMask);
             EditorGUILayout.PropertyField(m_TransparentLayerMask, Styles.TransparentMask);
             EditorGUI.indentLevel--;
@@ -160,6 +164,29 @@ namespace UnityEditor.Rendering.Universal
             EditorGUI.indentLevel++;
             {
                 EditorGUILayout.PropertyField(m_IntermediateTextureMode, Styles.intermediateTextureMode);
+            }
+            EditorGUI.indentLevel--;
+            EditorGUILayout.Space();
+            
+            EditorGUILayout.LabelField("RoxamiAdditionalData", EditorStyles.boldLabel);
+            EditorGUI.indentLevel++;
+            EditorGUILayout.PropertyField(m_roxamiAdditionalRendererData);
+            var data = m_roxamiAdditionalRendererData.objectReferenceValue as RoxamiAdditionalRendererData;
+            if (data != null)
+            {
+                EditorGUILayout.Space();
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+                Editor m_AdditionalRendererDataEditor = Editor.CreateEditor(data);
+                Editor.CreateCachedEditor(
+                    data,
+                    null,
+                    ref m_AdditionalRendererDataEditor
+                );
+
+                m_AdditionalRendererDataEditor.OnInspectorGUI();
+
+                EditorGUILayout.EndVertical();
             }
             EditorGUI.indentLevel--;
             EditorGUILayout.Space();

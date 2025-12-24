@@ -3,7 +3,7 @@
   "description": "Override by Universal",
   "version": "14.0.11",
   "unity": "2022.3",
-  "displayName": "Roxami RP",
+  "displayName": "RoxamiRP",
   "dependencies": {
     "com.unity.mathematics": "1.2.1",
     "com.unity.burst": "1.8.9",
