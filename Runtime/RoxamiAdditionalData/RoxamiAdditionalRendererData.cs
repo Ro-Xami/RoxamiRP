@@ -17,6 +17,7 @@ namespace UnityEngine.Rendering.Universal
             if (!asset || asset.m_RendererDataList == null || asset.m_RendererDataList.Length < 0) return;
             foreach (var renderer in asset.m_RendererDataList)
             {
+                if (!renderer) continue;
                 renderer.SetDirty();
             }
         }
