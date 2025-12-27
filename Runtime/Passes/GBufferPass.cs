@@ -242,18 +242,18 @@ namespace UnityEngine.Rendering.Universal.Internal
     {
         static readonly int s_CameraNormalsTextureID = Shader.PropertyToID("_CameraNormalsTexture");
         static ShaderTagId s_ShaderTagLit = new ShaderTagId("Lit");
-        static ShaderTagId s_ShaderTagSimpleLit = new ShaderTagId("SimpleLit");
-        static ShaderTagId s_ShaderTagUnlit = new ShaderTagId("Unlit");
-        static ShaderTagId s_ShaderTagComplexLit = new ShaderTagId("ComplexLit");
+        // static ShaderTagId s_ShaderTagSimpleLit = new ShaderTagId("SimpleLit");
+        // static ShaderTagId s_ShaderTagUnlit = new ShaderTagId("Unlit");
+        // static ShaderTagId s_ShaderTagComplexLit = new ShaderTagId("ComplexLit");
         static ShaderTagId s_ShaderTagUniversalGBuffer = new ShaderTagId("UniversalGBuffer");
-        static ShaderTagId s_ShaderTagUniversalMaterialType = new ShaderTagId("UniversalMaterialType");
+        // static ShaderTagId s_ShaderTagUniversalMaterialType = new ShaderTagId("UniversalMaterialType");
     
         ProfilingSampler m_ProfilingSampler = new ProfilingSampler("Render GBuffer");
     
         DeferredLights m_DeferredLights;
     
-        static ShaderTagId[] s_ShaderTagValues;
-        static RenderStateBlock[] s_RenderStateBlocks;
+        //static ShaderTagId[] s_ShaderTagValues;
+        // static RenderStateBlock[] s_RenderStateBlocks;
     
         FilteringSettings m_FilteringSettings;
         RenderStateBlock m_RenderStateBlock;
@@ -273,25 +273,25 @@ namespace UnityEngine.Rendering.Universal.Internal
             m_RenderStateBlock.stencilReference = stencilReference;
             m_RenderStateBlock.mask = RenderStateMask.Stencil;
     
-            if (s_ShaderTagValues == null)
-            {
-                s_ShaderTagValues = new ShaderTagId[5];
-                s_ShaderTagValues[0] = s_ShaderTagLit;
-                s_ShaderTagValues[1] = s_ShaderTagSimpleLit;
-                s_ShaderTagValues[2] = s_ShaderTagUnlit;
-                s_ShaderTagValues[3] = s_ShaderTagComplexLit;
-                s_ShaderTagValues[4] = new ShaderTagId(); // Special catch all case for materials where UniversalMaterialType is not defined or the tag value doesn't match anything we know.
-            }
-    
-            if (s_RenderStateBlocks == null)
-            {
-                s_RenderStateBlocks = new RenderStateBlock[5];
-                s_RenderStateBlocks[0] = DeferredLights.OverwriteStencil(m_RenderStateBlock, (int)StencilUsage.MaterialMask, (int)StencilUsage.MaterialLit);
-                s_RenderStateBlocks[1] = DeferredLights.OverwriteStencil(m_RenderStateBlock, (int)StencilUsage.MaterialMask, (int)StencilUsage.MaterialSimpleLit);
-                s_RenderStateBlocks[2] = DeferredLights.OverwriteStencil(m_RenderStateBlock, (int)StencilUsage.MaterialMask, (int)StencilUsage.MaterialUnlit);
-                s_RenderStateBlocks[3] = DeferredLights.OverwriteStencil(m_RenderStateBlock, (int)StencilUsage.MaterialMask, (int)StencilUsage.MaterialUnlit);  // Fill GBuffer, but skip lighting pass for ComplexLit
-                s_RenderStateBlocks[4] = s_RenderStateBlocks[0];
-            }
+            // if (s_ShaderTagValues == null)
+            // {
+            //     s_ShaderTagValues = new ShaderTagId[5];
+            //     s_ShaderTagValues[0] = s_ShaderTagLit;
+            //     s_ShaderTagValues[1] = s_ShaderTagSimpleLit;
+            //     s_ShaderTagValues[2] = s_ShaderTagUnlit;
+            //     s_ShaderTagValues[3] = s_ShaderTagComplexLit;
+            //     s_ShaderTagValues[4] = new ShaderTagId(); // Special catch all case for materials where UniversalMaterialType is not defined or the tag value doesn't match anything we know.
+            // }
+            //
+            // if (s_RenderStateBlocks == null)
+            // {
+            //     s_RenderStateBlocks = new RenderStateBlock[5];
+            //     s_RenderStateBlocks[0] = DeferredLights.OverwriteStencil(m_RenderStateBlock, (int)StencilUsage.MaterialMask, (int)StencilUsage.MaterialLit);
+            //     s_RenderStateBlocks[1] = DeferredLights.OverwriteStencil(m_RenderStateBlock, (int)StencilUsage.MaterialMask, (int)StencilUsage.MaterialSimpleLit);
+            //     s_RenderStateBlocks[2] = DeferredLights.OverwriteStencil(m_RenderStateBlock, (int)StencilUsage.MaterialMask, (int)StencilUsage.MaterialUnlit);
+            //     s_RenderStateBlocks[3] = DeferredLights.OverwriteStencil(m_RenderStateBlock, (int)StencilUsage.MaterialMask, (int)StencilUsage.MaterialUnlit);  // Fill GBuffer, but skip lighting pass for ComplexLit
+            //     s_RenderStateBlocks[4] = s_RenderStateBlocks[0];
+            // }
         }
     
         public void Dispose()
@@ -388,13 +388,13 @@ namespace UnityEngine.Rendering.Universal.Internal
                 renderingData.commandBuffer.Clear();
             }
     
-            NativeArray<ShaderTagId> tagValues = new NativeArray<ShaderTagId>(s_ShaderTagValues, Allocator.Temp);
-            NativeArray<RenderStateBlock> stateBlocks = new NativeArray<RenderStateBlock>(s_RenderStateBlocks, Allocator.Temp);
+            // NativeArray<ShaderTagId> tagValues = new NativeArray<ShaderTagId>(s_ShaderTagValues, Allocator.Temp);
+            // NativeArray<RenderStateBlock> stateBlocks = new NativeArray<RenderStateBlock>(s_RenderStateBlocks, Allocator.Temp);
     
-            context.DrawRenderers(renderingData.cullResults, ref data.drawingSettings, ref data.filteringSettings, s_ShaderTagUniversalMaterialType, false, tagValues, stateBlocks);
+            context.DrawRenderers(renderingData.cullResults, ref data.drawingSettings, ref data.filteringSettings);//, s_ShaderTagUniversalMaterialType, false, tagValues, stateBlocks);
     
-            tagValues.Dispose();
-            stateBlocks.Dispose();
+            // tagValues.Dispose();
+            // stateBlocks.Dispose();
     
             // Render objects that did not match any shader pass with error shader
             RenderingUtils.RenderObjectsWithError(context, ref renderingData.cullResults, renderingData.cameraData.camera, data.filteringSettings, SortingCriteria.None);
