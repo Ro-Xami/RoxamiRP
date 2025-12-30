@@ -36,6 +36,11 @@ namespace UnityEngine.Rendering.Universal.Internal
     // Manages deferred lights.
     internal class DeferredLights
     {
+        internal AdditionalLightsShadowCasterPass GetAdditionalLightsShadowCasterPass()
+        {
+            return m_AdditionalLightsShadowCasterPass;
+        }
+        
         internal static class ShaderConstants
         {
             public static readonly int _LitStencilRef = Shader.PropertyToID("_LitStencilRef");

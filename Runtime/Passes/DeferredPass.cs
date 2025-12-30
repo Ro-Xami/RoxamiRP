@@ -43,6 +43,8 @@ namespace UnityEngine.Rendering.Universal.Internal
         {
             if (m_RoxamiDeferredLights != null && m_RoxamiDeferredLights.NeedToExecute())
             {
+                var shadowCasterPass = m_DeferredLights.GetAdditionalLightsShadowCasterPass();
+                m_RoxamiDeferredLights.InitializeAdditionalLightsData(ref renderingData, shadowCasterPass);
                 m_RoxamiDeferredLights.Execute(context, renderingData.commandBuffer, ref renderingData);
                 return;
             }

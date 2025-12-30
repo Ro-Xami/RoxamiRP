@@ -135,6 +135,12 @@ Shader "Universal Render Pipeline/Terrain/Lit"
         {
             Name "GBuffer"
             Tags{"LightMode" = "UniversalGBuffer"}
+            
+            Stencil
+            {
+                Ref 100
+                Pass Replace
+            }
 
             HLSLPROGRAM
             #pragma target 4.5
