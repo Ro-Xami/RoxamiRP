@@ -145,7 +145,9 @@ namespace UnityEngine.Rendering.Universal.Internal
             m_CreateEmptyShadowmap = false;
             useNativeRenderPass = true;
             ShadowUtils.ShadowRTReAllocateIfNeeded(ref m_MainLightShadowmapTexture, renderTargetWidth, renderTargetHeight, k_ShadowmapBufferBits, name: k_MainLightShadowMapTextureName);
-
+            renderingData.roxamiRenderingData.mainLightShadowmapTexture = m_MainLightShadowmapTexture;
+            renderingData.roxamiRenderingData.isEmptyMainLightShadowmapTexture = false;
+            
             return true;
         }
 
@@ -157,7 +159,9 @@ namespace UnityEngine.Rendering.Universal.Internal
             m_CreateEmptyShadowmap = true;
             useNativeRenderPass = false;
             ShadowUtils.ShadowRTReAllocateIfNeeded(ref m_EmptyMainLightShadowmapTexture, k_EmptyShadowMapDimensions, k_EmptyShadowMapDimensions, k_ShadowmapBufferBits, name: k_EmptyMainLightShadowMapTextureName);
-
+            renderingData.roxamiRenderingData.mainLightShadowmapTexture = m_EmptyMainLightShadowmapTexture;
+            renderingData.roxamiRenderingData.isEmptyMainLightShadowmapTexture = true;
+            
             return true;
         }
 

@@ -1385,6 +1385,9 @@ namespace UnityEngine.Rendering.Universal
             renderingData.postProcessingEnabled = cameraData.stackAnyPostProcessingEnabled;
             renderingData.commandBuffer = cmd;
 
+            renderingData.roxamiRenderingData.mainLightShadowmapTexture = null;
+            renderingData.roxamiRenderingData.isEmptyMainLightShadowmapTexture = true;
+
             CheckAndApplyDebugSettings(ref renderingData);
         }
 
