@@ -40,6 +40,11 @@ namespace UnityEngine.Rendering.Universal
             /// The layer mask used.
             /// </summary>
             public uint layerMask;
+
+            /// <summary>
+            /// The roxami data of the light.
+            /// </summary>
+            public Vector4 roxamiLightData;
         }
     }
 }

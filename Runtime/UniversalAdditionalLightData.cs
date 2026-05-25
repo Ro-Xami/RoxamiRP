@@ -234,6 +234,23 @@ namespace UnityEngine.Rendering.Universal
         }
 
         /// <summary>
+        /// 用于自定义拓展灯光组件
+        /// x: Range衰减起始点
+        /// </summary>
+        public Vector4 roxamiLightData
+        {
+            get
+            {
+                var vec = Vector4.zero;
+                vec.x = m_RangeAttenuationStart;
+                
+                return vec;
+            }
+            set => m_RangeAttenuationStart = value.x;
+        }
+        [SerializeField] [Range(0, 1)] float m_RangeAttenuationStart = 0;
+
+        /// <summary>
         /// Controls the size of the cookie mask currently assigned to the light.
         /// </summary>
         [Tooltip("Controls the size of the cookie mask currently assigned to the light.")]

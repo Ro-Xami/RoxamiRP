@@ -236,6 +236,7 @@ namespace UnityEditor.Rendering.Universal
                     serializedLight.settings.DrawRange(false);
 #endif
                 }
+                DrawRoxamiLightExtensionData(serializedLight, lightType);
             }
 
             DrawLightCookieContent(serializedLight, owner);
@@ -487,6 +488,17 @@ namespace UnityEditor.Rendering.Universal
                         Experimental.Lightmapping.SetLightDirty((UnityEngine.Light)serializedLight.serializedObject.targetObject);
                 }
             }
+        }
+        
+        static void DrawRoxamiLightExtensionData(UniversalRenderPipelineSerializedLight serializedLight, LightType lightType = LightType.Directional)
+        {
+            if (lightType != LightType.Spot && lightType != LightType.Point)
+                return;
+            
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(serializedLight.rangeAttenuationStart);
+            if (EditorGUI.EndChangeCheck())
+                Experimental.Lightmapping.SetLightDirty((UnityEngine.Light)serializedLight.serializedObject.targetObject);
         }
     }
 }

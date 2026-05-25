@@ -1361,6 +1361,7 @@ namespace UnityEngine.Rendering.Universal
         static Vector4 k_DefaultLightAttenuation = new Vector4(0.0f, 1.0f, 0.0f, 1.0f);
         static Vector4 k_DefaultLightSpotDirection = new Vector4(0.0f, 0.0f, 1.0f, 0.0f);
         static Vector4 k_DefaultLightsProbeChannel = new Vector4(0.0f, 0.0f, 0.0f, 0.0f);
+        static Vector4 k_DefaultRoxamiLightData = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 
         static List<Vector4> m_ShadowBiasData = new List<Vector4>();
         static List<int> m_ShadowResolutionData = new List<int>();
@@ -1708,13 +1709,15 @@ namespace UnityEngine.Rendering.Universal
         /// <param name="lightAttenuation">The attenuation of the light.</param>
         /// <param name="lightSpotDir">The direction of the light.</param>
         /// <param name="lightOcclusionProbeChannel">The occlusion probe channel for the light.</param>
-        public static void InitializeLightConstants_Common(NativeArray<VisibleLight> lights, int lightIndex, out Vector4 lightPos, out Vector4 lightColor, out Vector4 lightAttenuation, out Vector4 lightSpotDir, out Vector4 lightOcclusionProbeChannel)
+        /// <param name="roxamiLightData">The Roxami light data for the light.</param>
+        public static void InitializeLightConstants_Common(NativeArray<VisibleLight> lights, int lightIndex, out Vector4 lightPos, out Vector4 lightColor, out Vector4 lightAttenuation, out Vector4 lightSpotDir, out Vector4 lightOcclusionProbeChannel, out Vector4 roxamiLightData)
         {
             lightPos = k_DefaultLightPosition;
             lightColor = k_DefaultLightColor;
             lightOcclusionProbeChannel = k_DefaultLightsProbeChannel;
             lightAttenuation = k_DefaultLightAttenuation;  // Directional by default.
             lightSpotDir = k_DefaultLightSpotDirection;
+            roxamiLightData = k_DefaultRoxamiLightData;
 
             // When no lights are visible, main light will be set to -1.
             // In this case we initialize it to default values and return
@@ -1726,6 +1729,7 @@ namespace UnityEngine.Rendering.Universal
             var light = lightData.light;
             var lightLocalToWorld = lightData.localToWorldMatrix;
             var lightType = lightData.lightType;
+            var additionalLightData = light.GetUniversalAdditionalLightData();
 
             if (lightType == LightType.Directional)
             {
@@ -1736,6 +1740,13 @@ namespace UnityEngine.Rendering.Universal
             {
                 Vector4 pos = lightLocalToWorld.GetColumn(3);
                 lightPos = new Vector4(pos.x, pos.y, pos.z, 1.0f);
+                
+                roxamiLightData = new Vector4(
+                    Mathf.Pow(lightData.range, 2), 
+                    1.0f / lightData.range,
+                    lightData.range * lightData.range, 
+                    0f
+                    );
 
                 GetPunctualLightDistanceAttenuation(lightData.range, ref lightAttenuation);
 

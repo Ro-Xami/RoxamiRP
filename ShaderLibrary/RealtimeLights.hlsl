@@ -159,12 +159,16 @@ Light GetAdditionalPerObjectLight(int perObjectLightIndex, float3 positionWS)
     half4 distanceAndSpotAttenuation = _AdditionalLightsBuffer[perObjectLightIndex].attenuation;
     half4 spotDirection = _AdditionalLightsBuffer[perObjectLightIndex].spotDirection;
     uint lightLayerMask = _AdditionalLightsBuffer[perObjectLightIndex].layerMask;
+    
+    half4 roxamiData = _AdditionalLightsBuffer[perObjectLightIndex].roxamiData;
 #else
     float4 lightPositionWS = _AdditionalLightsPosition[perObjectLightIndex];
     half3 color = _AdditionalLightsColor[perObjectLightIndex].rgb;
     half4 distanceAndSpotAttenuation = _AdditionalLightsAttenuation[perObjectLightIndex];
     half4 spotDirection = _AdditionalLightsSpotDir[perObjectLightIndex];
     uint lightLayerMask = asuint(_AdditionalLightsLayerMasks[perObjectLightIndex]);
+    
+    half4 roxamiData = _AdditionalLightsRoxamiData[perObjectLightIndex];
 #endif
 
     // Directional lights store direction in lightPosition.xyz and have .w set to 0.0.
@@ -174,8 +178,15 @@ Light GetAdditionalPerObjectLight(int perObjectLightIndex, float3 positionWS)
 
     half3 lightDirection = half3(lightVector * rsqrt(distanceSqr));
     // full-float precision required on some platforms
+    
+    //用于调节衰减范围，增加美术可控性
+    // half attenuationStart = roxamiData.x;
+    // half rangeInverse = roxamiData.y;
+    // half rangeSquared = roxamiData.z;
+    // distanceSqr = smoothstep(attenuationStart, 1, distanceSqr * rangeInverse) * rangeSquared;
+    
     float attenuation = DistanceAttenuation(distanceSqr, distanceAndSpotAttenuation.xy) * AngleAttenuation(spotDirection.xyz, lightDirection, distanceAndSpotAttenuation.zw);
-
+    
     Light light;
     light.direction = lightDirection;
     light.distanceAttenuation = attenuation;
